@@ -11,7 +11,14 @@ router.post("/", async (req, res, next) => {
     let account = req.body;
     const data = JSON.parse(await readFile(fileName));
     console.log(data);
-    account = { id: data.nextId++, ...account };
+    if (account.name || account.balance) {
+      throw new error('name or balance is null');
+    }
+    account = {
+      id: data.nextId++,
+      name: account.name,
+      balance: account.balance
+    };
     data.accounts.push(account);
 
     await writeFile(fileName, JSON.stringify(data, null, 2));
