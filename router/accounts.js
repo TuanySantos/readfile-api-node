@@ -1,6 +1,6 @@
 import express from 'express';
 import { promises as fs } from 'fs';
-
+import cors from 'cors';
 
 const { readFile, writeFile } = fs;
 
@@ -31,7 +31,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.get('/', async (req, res, next) => {
+router.get('/', cors(), async (req, res, next) => {
   try {
     const data = JSON.parse(await readFile(fileName));
     delete data.nextId;
