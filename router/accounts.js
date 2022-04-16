@@ -1,6 +1,6 @@
 import express from 'express';
 import { promises as fs } from 'fs';
-
+import cors from 'cors';
 
 const { readFile, writeFile } = fs;
 
@@ -9,11 +9,12 @@ const router = express.Router();
 router.post("/", async (req, res, next) => {
   try {
     let account = req.body;
+    if (!account.name || account.balance == null) {
+      res.seng('name or balance is null');
+    }
+
     const data = JSON.parse(await readFile(fileName));
     console.log(data);
-    if (account.name || account.balance) {
-      throw new error('name or balance is null');
-    }
     account = {
       id: data.nextId++,
       name: account.name,
@@ -24,14 +25,13 @@ router.post("/", async (req, res, next) => {
     await writeFile(fileName, JSON.stringify(data, null, 2));
     res.send(account);
     logger.info(` POST /account - ${JSON.stringify(account)}`);
-    res.end();
   } catch (err) {
     next(err)
     res.end();
   }
 });
 
-router.get('/', async (req, res, next) => {
+router.get('/', cors(), async (req, res, next) => {
   try {
     const data = JSON.parse(await readFile(fileName));
     delete data.nextId;
@@ -70,10 +70,19 @@ router.delete('/:id', async (req, res, next) => {
 router.put('/', async (req, res, next) => {
   try {
     const account = req.body;
+    if (!account.name || account.balance == null) {
+      res.seng('name or balance is null');
+    }
     const data = JSON.parse(await readFile(fileName));
     const index = data.accounts.findIndex(a => a.id === account.id);
+    if (index === -1) {
+      res.send("index not found");
+    }
 
-    data.accounts[index] = account;
+
+    data.accounts[index].name = account.name;
+    data.accounts[index].balance = account.balance;
+
     await writeFile(fileName, JSON.stringify(data));
     res.send(account);
     logger.info(` PUT /account - ${JSON.stringify(account)}`)
